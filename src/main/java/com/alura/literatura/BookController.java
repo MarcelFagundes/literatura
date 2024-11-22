@@ -15,8 +15,8 @@ public class BookController {
         this.bookApiService = bookApiService;
     }
 
-    @GetMapping("/books")
-    public String getBooks() {
+    @GetMapping("/book")
+    public Book getBooks() {
         return bookApiService.fetchBooks();
     }
 }
