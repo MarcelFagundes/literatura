@@ -1,9 +1,8 @@
 package com.challengeliteratura.challengeliteratura.client;
 
+import java.time.LocalDate;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 
 import com.challengeliteratura.challengeliteratura.entity.AuthorEntity;
@@ -24,7 +23,8 @@ public class ClientLiterature {
     private final ConvertData conversor = new ConvertData();
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
-    private int currentYear = Year.now().getValue();
+    private final int currentYear = Year.now().getValue();
+    private final LocalDate currentDate = LocalDate.now();
 
     public ClientLiterature(BookRepository bookRepository, AuthorRepository authorRepository) {
         this.bookRepository = bookRepository;
@@ -43,8 +43,9 @@ public class ClientLiterature {
                     	5) - Listar livros por idioma
                     	6) - Listar TOP 10 livros por downloads
                     	7) - Buscar autor por livro na API
+                    	8) - Gerar estatíticas de livros
                     	0) - Sair
-                    	""";
+                    """;
             System.out.println(menu);
             option = inData.nextInt();
             inData.nextLine();
@@ -75,6 +76,9 @@ public class ClientLiterature {
                 case 7:
                     findAuthorAPI();
                     break;
+                case 8:
+                    generateBookDownloadStatistics();
+                    break;
                 case 0:
                     System.out.println("Saindo da aplicação\n");
                     break;
@@ -83,8 +87,10 @@ public class ClientLiterature {
             }
         }
     }
+
     private void findAuthors() {
         List<AuthorEntity> authors = authorRepository.findAll();
+        int currentYear = currentDate.getYear();
 
         if (!authors.isEmpty()) {
             System.out.println("\n" + "=".repeat(50));
@@ -92,9 +98,12 @@ public class ClientLiterature {
             System.out.println("=".repeat(50));
             for (AuthorEntity author : authors) {
                 System.out.println("Nome          : " + author.getName());
-                System.out.println("Nascimento    : " + author.getBirthYear());
-                System.out.println("Falecimento   : " +
-                        (author.getDeathYear() != null ? author.getDeathYear() : "Autor ainda vivo"));
+                System.out.println("Nascimento    : " +
+                        (author.getBirthYear() != null ? author.getBirthYear() : "[INFO] Data de nascimento não registrada"));
+                System.out.println("Morte         : " +
+                        (author.getDeathYear() != null && author.getDeathYear() <= currentYear
+                                ? author.getDeathYear()
+                                : "Autor ainda vivo"));
                 System.out.println("Livros        : " +
                         (author.getBooks() != null ? author.getBooks().getTitle() : "[INFO] Nenhum livro registrado"));
                 System.out.println("-".repeat(50));
@@ -105,6 +114,7 @@ public class ClientLiterature {
             System.out.println("=".repeat(50));
         }
     }
+
     private void findBook() {
         List<BookEntity> books = bookRepository.findAll();
 
@@ -118,12 +128,11 @@ public class ClientLiterature {
                 System.out.println("Autor: " +
                         (book.getAuthor() != null ? book.getAuthor().getName() : "[INFO] Author inexistente ou não registrado"));
                 System.out.println("Data de Nascimento do autor: " +
-                      (book.getAuthor().getBirthYear() != null ? book.getAuthor().getBirthYear() : "[INFO] Data de nascimento não informada"));
+                        (book.getAuthor().getBirthYear() != null ? book.getAuthor().getBirthYear() : "[INFO] Data de nascimento não informada"));
 
                 if ((book.getAuthor().getBirthYear() == null) || book.getAuthor().getDeathYear() == null) {
                     System.out.println("[INFO] Data de Nascimento ou de Morte do autor não informadas");
-                }
-                else if (book.getAuthor().getDeathYear() > currentYear) {
+                } else if (book.getAuthor().getDeathYear() > currentYear) {
                     int age = (currentYear - book.getAuthor().getBirthYear());
                     System.out.println("[INFO] O autor está vivo. Ano de nascimento: " + book.getAuthor().getBirthYear() + ". Idade atual: " + age + " anos.");
                 } else {
@@ -133,7 +142,7 @@ public class ClientLiterature {
                 System.out.println("Idioma: " + book.getLanguage());
                 System.out.println("Download: " + book.getDownload());
                 System.out.println("=".repeat(50));
-                }
+            }
 
         } else {
             System.out.println("\n\n [INFO] Nenhum livro encontrado. \n\n");
@@ -156,12 +165,11 @@ public class ClientLiterature {
                 System.out.println("Nome: " + author.getName());
                 if ((author.getBirthYear() == null) || author.getDeathYear() == null) {
                     System.out.println("[INFO] Data de Nascimento ou de Morte do autor não informadas");
-                }
-                else if (author.getDeathYear() > currentYear) {
+                } else if (author.getDeathYear() > currentYear) {
                     int age = (currentYear - author.getBirthYear());
                     System.out.println("O autor está vivo. Ano de nascimento: " + author.getBirthYear() + ". Idade atual: " + age + " anos.");
                 } else {
-                    int ageAtDeath = (currentYear - author.getDeathYear());
+                    //int ageAtDeath = (currentYear - author.getDeathYear());
                     System.out.println("O autor está falecido. Ano de nascimento: " + author.getBirthYear() + ", Ano de morte: " + author.getDeathYear());
                 }
                 System.out.println("Livros: " + author.getBooks().getTitle());
@@ -174,12 +182,12 @@ public class ClientLiterature {
 
     private void findLanguages() {
         var menu = """
-        Selecione um Idioma:
-            1) - Português
-            2) - Inglês
-            3) - Espanhol
-            4) - Francês
-        """;
+                Selecione um Idioma:
+                    1) - Português
+                    2) - Inglês
+                    3) - Espanhol
+                    4) - Francês
+                """;
 
         System.out.println(menu);
         int language;
@@ -229,6 +237,7 @@ public class ClientLiterature {
             System.out.println("[INFO] Busca não encontrada");
         }
     }
+
     private Results getDataAPI() {
         System.out.println("Digite o nome do livro que você deseja buscar: ");
         var title = inData.nextLine();
@@ -293,38 +302,46 @@ public class ClientLiterature {
         System.out.println("Buscar autor por nome API: ");
         System.out.println(booksApi);
     }
+
     public void findAuthorAPI() {
         System.out.println("Digite o nome do autor que você deseja buscar: ");
         String authorName = inData.nextLine();
 
         List<AuthorEntity> authorsInDb = authorRepository.findAuthorByName(authorName);
+        System.out.println(authorsInDb.isEmpty());
 
         if (!authorsInDb.isEmpty()) {
-            System.out.println("Autores encontrados no banco de dados:");
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println(String.format("%-30s", "Autores encontrados no banco de dados").toUpperCase());
+            System.out.println(String.format("%-30s", "Buscando Autores na API:").toUpperCase());
+            System.out.println("=".repeat(50));
+
             for (AuthorEntity author : authorsInDb) {
                 System.out.println("Nome: " + author.getName());
-//                System.out.println("Livros:");
-//                for (BookEntity book : author.getBooks()) {
-//                    System.out.println("- " + book.getTitle());
-//                }
+                System.out.println("Nome: " + author.getBooks().getTitle());
+                System.out.println("=".repeat(50));
             }
         } else {
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println(String.format("%-30s", "Autores não encontrados no banco de dados").toUpperCase());
+            System.out.println(String.format("%-30s", "Buscando Autores na API:").toUpperCase());
+            System.out.println("=".repeat(50));
             Results authorsApi = getDataAPIByAuthor(authorName);
 
             if (!authorsApi.results().isEmpty() || authorsApi.results() == null) {
                 System.out.println("\n" + "=".repeat(50));
                 System.out.println(String.format("%-30s", "Autores encontrados na API:").toUpperCase());
                 System.out.println("=".repeat(50));
-                for (Book book : authorsApi.results() ) {
+                for (Book book : authorsApi.results()) {
                     System.out.println("Nome do Autor: " + book.authors().get(0).name());
                     System.out.println("Título do Livro: " + book.title());
                     System.out.println("=".repeat(50));
 
                     BookEntity bookEntity = new BookEntity(book);
-                   // boolean exists = bookRepository.findByTitle(book.title()).isPresent();
-//                    if (exists) {
-//                        throw new IllegalArgumentException("[INFO] O autor consultado já foi inserido no banco de dados.");
-//                    }
+                    boolean exists = bookRepository.findByTitle(book.title()).isPresent();
+                    if (exists) {
+                        throw new IllegalArgumentException("[INFO] O autor consultado já foi inserido no banco de dados.");
+                    }
                     bookRepository.save(bookEntity);
                 }
 
@@ -344,7 +361,7 @@ public class ClientLiterature {
         return conversor.obterInformacao(json, Results.class);
     }
 
-    public void listTop10ByDownloads() {
+        public void listTop10ByDownloads() {
         List<BookEntity> topBooks = bookRepository.findTop10ByDownloadsDesc();
         System.out.println("\n" + "=".repeat(50));
         System.out.println(String.format("%-30s", "LISTAR TOP 10 LVROS POR DOWNLOADS").toUpperCase());
@@ -359,6 +376,31 @@ public class ClientLiterature {
         for (BookEntity book : topBooks) {
             System.out.printf("%d) %s - Downloads: %d%n", rank++, book.getTitle(), book.getDownload());
         }
+        System.out.println("=".repeat(50));
+    }
+
+    public void generateBookDownloadStatistics() {
+        List<BookEntity> books = bookRepository.findAll();
+
+
+        if (books.isEmpty()) {
+            System.out.println("[INFO] Não há livros cadastrados no banco de dados.");
+            return;
+        }
+
+        DoubleSummaryStatistics stats = books.stream()
+                //.mapToDouble (BookEntity::getDownload) nullpointer
+                .mapToDouble(book -> book.getDownload() != null ? book.getDownload() : 0)// Extrai os downloads como um fluxo de doubles
+                .summaryStatistics();
+
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println("ESTATÍSTICAS DE DOWNLOADS");
+        System.out.println("=".repeat(50));
+        System.out.printf("Total de Downloads: %.0f%n", stats.getSum());
+        System.out.printf("Média de Downloads: %.2f%n", stats.getAverage());
+        System.out.printf("Máximo de Downloads: %.0f%n", stats.getMax());
+        System.out.printf("Mínimo de Downloads: %.0f%n", stats.getMin());
+        System.out.printf("Total de Livros: %d%n", stats.getCount());
         System.out.println("=".repeat(50));
     }
 }

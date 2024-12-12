@@ -9,14 +9,14 @@ import com.challengeliteratura.challengeliteratura.repository.AuthorRepository;
 import com.challengeliteratura.challengeliteratura.repository.BookRepository;
 
 @SpringBootApplication
-public class ChallengeLiteraturaApplication implements CommandLineRunner {
+public class LiteraturaApp implements CommandLineRunner {
 	@Autowired
 	private BookRepository bookRepository;
 	@Autowired
 	private AuthorRepository authorRepository;
 
 	public static void main(String[] args) {
-		SpringApplication.run(ChallengeLiteraturaApplication.class, args);
+		SpringApplication.run(LiteraturaApp.class, args);
 	}
 
 	@Override
