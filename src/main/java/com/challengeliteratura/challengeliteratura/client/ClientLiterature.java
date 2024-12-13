@@ -3,12 +3,9 @@ package com.challengeliteratura.challengeliteratura.client;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
-
-
 import com.challengeliteratura.challengeliteratura.entity.AuthorEntity;
 import com.challengeliteratura.challengeliteratura.entity.BookEntity;
 import com.challengeliteratura.challengeliteratura.mapper.ConvertData;
-import com.challengeliteratura.challengeliteratura.model.Author;
 import com.challengeliteratura.challengeliteratura.model.Book;
 import com.challengeliteratura.challengeliteratura.model.Results;
 import com.challengeliteratura.challengeliteratura.repository.AuthorRepository;
@@ -86,6 +83,8 @@ public class ClientLiterature {
                     System.out.println("[ERRO] Opção inválida\n");
             }
         }
+        inData.close();
+        System.exit(0);
     }
 
     private void findAuthors() {
@@ -239,14 +238,18 @@ public class ClientLiterature {
     }
 
     private Results getDataAPI() {
-        System.out.println("Digite o nome do livro que você deseja buscar: ");
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println(String.format("%-30s", "Digite o nome do livro que você deseja buscar ").toUpperCase());
+        System.out.println("=".repeat(50)+"\n");
         var title = inData.nextLine();
         title = title.replace(" ", "%20");
-        System.out.println("Pesquisando por titlulo : " + title);
-        System.out.println(URL_BASE + title);
+        System.out.println("\n" + "=".repeat(50));
+        System.out.println(String.format("%-30s", "Pesquisando por titulo : "+title).toUpperCase());
+        System.out.println("\n"+URL_BASE + title);
+        System.out.println("=".repeat(50));
         var json = consumoApi.dataBookApi(URL_BASE + title);
-        System.out.println(json);
-        return conversor.obterInformacao(json, Results.class);
+        //System.out.println(json);
+        return conversor.getInformationAPI(json, Results.class);
     }
 
     private void findBookAPI() {
@@ -255,9 +258,10 @@ public class ClientLiterature {
         if (!booksApi.results().isEmpty()) {
 
             BookEntity book = new BookEntity(booksApi.results().get(0));
-
+            System.out.println("\n" + "=".repeat(50));
             System.out.println(String.format("%-30s", "LIVRO ENCONTRADO").toUpperCase());
             System.out.println(book.getTitle());
+            System.out.println("=".repeat(50));
 
             if (book.getAuthor() == null || book.getAuthor().getName().isBlank()) {
                 AuthorEntity placeholderAuthor = new AuthorEntity();
@@ -273,33 +277,6 @@ public class ClientLiterature {
             bookRepository.save(book);
         }
         System.out.println("Buscar livro por título API: ");
-        System.out.println(booksApi);
-    }
-
-    private void findAuthorAPIh() {
-        Results booksApi = getDataAPI();
-
-        if (!booksApi.results().isEmpty()) {
-
-            BookEntity book = new BookEntity(booksApi.results().get(0));
-
-            System.out.println(String.format("%-30s", "AUTOR ENCONTRADO").toUpperCase());
-            System.out.println(book.getTitle());
-
-            if (book.getAuthor() == null || book.getAuthor().getName().isBlank()) {
-                AuthorEntity placeholderAuthor = new AuthorEntity();
-                placeholderAuthor.setName("[INFO] Autor inexistente ou não cadastrado");
-                book.setAuthor(placeholderAuthor);
-            }
-
-            boolean exists = bookRepository.findByTitle(book.getTitle()).isPresent();
-            if (exists) {
-                throw new IllegalArgumentException("[INFO] O autor consultado já foi inserido no banco de dados.");
-            }
-
-            bookRepository.save(book);
-        }
-        System.out.println("Buscar autor por nome API: ");
         System.out.println(booksApi);
     }
 
@@ -358,7 +335,7 @@ public class ClientLiterature {
         System.out.println("Buscando por autor: " + authorName);
         System.out.println("URL: " + url);
         var json = consumoApi.dataBookApi(url);
-        return conversor.obterInformacao(json, Results.class);
+        return conversor.getInformationAPI(json, Results.class);
     }
 
         public void listTop10ByDownloads() {
@@ -374,7 +351,7 @@ public class ClientLiterature {
 
         int rank = 1;
         for (BookEntity book : topBooks) {
-            System.out.printf("%d) %s - Downloads: %d%n", rank++, book.getTitle(), book.getDownload());
+            System.out.printf("%d° - %s -> Downloads: %d%n", rank++, book.getTitle(), book.getDownload());
         }
         System.out.println("=".repeat(50));
     }
@@ -390,7 +367,7 @@ public class ClientLiterature {
 
         DoubleSummaryStatistics stats = books.stream()
                 //.mapToDouble (BookEntity::getDownload) nullpointer
-                .mapToDouble(book -> book.getDownload() != null ? book.getDownload() : 0)// Extrai os downloads como um fluxo de doubles
+                .mapToDouble(book -> book.getDownload() != null ? book.getDownload() : 0)
                 .summaryStatistics();
 
         System.out.println("\n" + "=".repeat(50));

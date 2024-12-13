@@ -14,7 +14,6 @@ public class AuthorEntity {
     private Integer birthYear;
     private Integer deathYear;
 
-
     @OneToOne
     @JoinTable(
             name = "Book",
@@ -22,10 +21,7 @@ public class AuthorEntity {
             inverseJoinColumns = @JoinColumn(name = "id"))
     private BookEntity books;
 
-
-    public AuthorEntity() {
-
-    }
+    public AuthorEntity() {}
 
     public AuthorEntity(Author author) {
         this.name = StringsUtil.limitLength(author.name(), 200);

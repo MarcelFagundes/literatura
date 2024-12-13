@@ -1,5 +1,5 @@
 package com.challengeliteratura.challengeliteratura.mapper;
 
 public interface IConvertData {
-    <T> T obterInformacao(String json, Class<T> clase);
+    <T> T getInformationAPI(String json, Class<T> classed);
 }

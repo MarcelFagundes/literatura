@@ -16,8 +16,7 @@ public class BookEntity {
     @OneToOne(mappedBy = "books", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private AuthorEntity author;
 
-    public BookEntity() {
-    }
+    public BookEntity() {}
 
     public BookEntity(Book book) {
         this.title = StringsUtil.limitLength(book.title(), 200);
