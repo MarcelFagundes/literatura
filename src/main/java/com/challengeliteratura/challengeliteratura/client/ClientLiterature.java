@@ -43,6 +43,7 @@ public class ClientLiterature {
                     	8) - Gerar estatíticas de livros
                     	0) - Sair
                     """;
+
             System.out.println(menu);
             option = inData.nextInt();
             inData.nextLine();
@@ -52,7 +53,7 @@ public class ClientLiterature {
                     try {
                         findBookAPI();
                     } catch (IllegalArgumentException e) {
-                        System.out.println("[ERRO] " + e.getMessage());
+                        System.out.println("[ERRO]" + e.getMessage());
                     }
                     break;
                 case 2:
@@ -71,8 +72,11 @@ public class ClientLiterature {
                     listTop10ByDownloads();
                     break;
                 case 7:
-                    findAuthorAPI();
-                    break;
+                    try {
+                        findAuthorAPI();
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("[ERRO]" + e.getMessage());
+                    }
                 case 8:
                     generateBookDownloadStatistics();
                     break;
